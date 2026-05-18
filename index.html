@@ -116,6 +116,133 @@
     </div>
 </div>
 
+<script>
+    const BASE_BAGS = 100;
+    const BASE_PIG = 20.0;
+    
+    const flavorSpecs = {
+        "ปาปริก้า": { gram: 40.0, cost: 7.56 },
+        "ต้มยำ":    { gram: 23.0, cost: 4.34 },
+        "วิงแซ่บ":  { gram: 40.0, cost: 7.56 },
+        "BBQ":     { gram: 40.0, cost: 7.56 },
+        "ลาบ":     { gram: 60.0, cost: 30.00 }
+    };
+
+    const CONSTANT_MATERIAL_COST_100_BAGS = 1400 + 190 + 150 + 40 + 1.00 + 6.00 + 1.90 + 62.50 + 30 + 20;
+
+    window.onload = function() {
+        renderLogs();
+    };
+
+    function resetResults() {
+        document.getElementById('res_supply').style.display = 'none';
+        document.getElementById('res_demand').style.display = 'none';
+    }
+
+    function calcBySupply() {
+        const havePig = parseFloat(document.getElementById('have_pig').value);
+        const flavor = document.getElementById('flavor_select').value;
+
+        if (isNaN(havePig) || havePig <= 0) {
+            alert('กรุณากรอกปริมาณมันหมูติดหนังให้ถูกต้อง');
+            return;
+        }
+
+        const factor = havePig / BASE_PIG;
+        const calculatedBags = Math.floor(BASE_BAGS * factor);
+        const calculatedWeight = (5.5 * factor).toFixed(2);
+
+        document.getElementById('out_have_pig').innerText = havePig.toLocaleString();
+        document.getElementById('out_yield_bags').innerText = calculatedBags.toLocaleString();
+        document.getElementById('out_yield_weight').innerText = calculatedWeight;
+        document.getElementById('res_supply').style.display = 'block';
+
+        saveLog(flavor, 'คำนวณจากวัตถุดิบที่มี', `มันหมู ${havePig} กก.`, `ผลิตได้ประมาณ ${calculatedBags} ถุง`);
+    }
+
+    function calcByDemand() {
+        const needBags = parseFloat(document.getElementById('need_bags').value);
+        const flavor = document.getElementById('flavor_select').value;
+
+        if (isNaN(needBags) || needBags <= 0) {
+            alert('กรุณากรอกจำนวนถุงเป้าหมายให้ถูกต้อง');
+            return;
+        }
+
+        const factor = needBags / BASE_BAGS;
+
+        const pig = 20.0 * factor;
+        const onion = 2.0 * factor;
+        const garlic = 2.0 * factor;
+        const basil = 1.0 * factor;
+        const salt = 0.10 * factor;
+        const sugar = 0.20 * factor;
+        const msg = 0.10 * factor;
+        const chili = 0.50 * factor;
+        const kaffir = 1.0 * factor;
+        const galangal = 0.50 * factor;
+
+        const activeFlavor = flavorSpecs[flavor];
+        const flavorGrams = activeFlavor.gram * factor;
+        const flavorCost = activeFlavor.cost * factor;
+
+        const totalCost = (CONSTANT_MATERIAL_COST_100_BAGS * factor) + flavorCost;
+        const bagCost = totalCost / needBags;
+
+        document.getElementById('out_demand_flavor').innerText = flavor;
+        document.getElementById('out_total_cost').innerText = totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('out_bag_cost').innerText = bagCost.toFixed(2);
+
+        const listHTML = `
+            <li>🐷 <b>มันหมูติดหนัง:</b> ${pig.toFixed(2)} กิโลกรัม</li>
+            <li>🧅 <b>หัวหอมแดงไทย:</b> ${onion.toFixed(2)} กิโลกรัม</li>
+            <li>🧄 <b>กระเทียม:</b> ${garlic.toFixed(2)} กิโลกรัม</li>
+            <li>🌿 <b>โหระพา:</b> ${basil.toFixed(2)} กิโลกรัม</li>
+            <li>🧂 <b>เกลือ:</b> ${salt.toFixed(3)} ถุง (ประมาณ ${(salt*1000).toFixed(0)} กรัม)</li>
+            <li>🍬 <b>น้ำตาลทรายขาว:</b> ${sugar.toFixed(2)} กิโลกรัม</li>
+            <li>🧪 <b>อายิโน๊ะโมโต๊ะ:</b> ${msg.toFixed(3)} ถุง (ประมาณ ${(msg*1000).toFixed(0)} กรัม)</li>
+            <li>🌶️ <b>พริกแห้งจินดา:</b> ${chili.toFixed(2)} กิโลกรัม</li>
+            <li>🍃 <b>ใบมะกรูด:</b> ${kaffir.toFixed(2)} กิโลกรัม</li>
+            <li>🥔 <b>ข่า:</b> ${galangal.toFixed(2)} กิโลกรัม</li>
+            <li>✨ <b>ผงปรุงรส (${flavor}):</b> <span class="highlight">${flavorGrams.toFixed(1)} กรัม</span></li>
+        `;
+        document.getElementById('shopping_list').innerHTML = listHTML;
+        document.getElementById('res_demand').style.display = 'block';
+
+        saveLog(flavor, 'คำนวณตามเป้าหมาย', `ต้องการผลิต ${needBags} ถุง`, `ต้นทุนวัตถุดิบรวม ${totalCost.toFixed(2)} บาท`);
+    }
+
+    function saveLog(flavor, type, input, result) {
+        let logs = JSON.parse(localStorage.getItem('namprik_pro_logs')) || [];
+        const now = new Date();
+        const timeString = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH');
+        
+        logs.unshift({ time: timeString, flavor, type, input, result });
+        localStorage.setItem('namprik_pro_logs', JSON.stringify(logs));
+        renderLogs();
+    }
+
+    function renderLogs() {
+        const logs = JSON.parse(localStorage.getItem('namprik_pro_logs')) || [];
+        const body = document.getElementById('historyBody');
+        body.innerHTML = logs.map(item => `
+            <tr>
+                <td>${item.time}</td>
+                <td><span style="background:#e2e8f0; padding:2px 8px; border-radius:4px; font-weight:bold;">${item.flavor}</span></td>
+                <td>${item.type}</td>
+                <td>${item.input}</td>
+                <td class="highlight">${item.result}</td>
+            </tr>
+        `).join('');
+    }
+
+    function clearLogs() {
+        if (confirm('คุณต้องการลบประวัติการคำนวณทั้งหมดใช่หรือไม่?')) {
+            localStorage.removeItem('namprik_pro_logs');
+            renderLogs();
+        }
+    }
+</script>
 
 
 </body>
