@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบคำนวณต้นทุนการผลิตน้ำพริกกากหมู (Pro Edition)</title>
+    <title>ระบบคำนวณต้นทุนผลิตน้ำพrikกากหมู (Auto-Unit Converter)</title>
     <style>
         body { font-family: 'Sarabun', sans-serif; background: #f4f6f9; padding: 10px; color: #1e293b; margin: 0; }
         .container { width: 100%; max-width: 1200px; margin: auto; box-sizing: border-box; }
@@ -21,12 +21,12 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
         
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 850px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 800px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
         th { background: #f8fafc; color: #475569; font-size: 0.85em; }
         
-        table input { padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.9em; width: 100%; box-sizing: border-box; }
-        table input:focus { border-color: #e67e22; outline: none; background: #fff7ed; }
+        table input, table select { padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.9em; width: 100%; box-sizing: border-box; }
+        table input:focus, table select:focus { border-color: #e67e22; outline: none; background: #fff7ed; }
         
         button { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.2s; margin-top: 5px; }
         .btn-primary { background: #e67e22; color: white; }
@@ -56,12 +56,12 @@
 
 <div class="container">
     <div class="header-banner">
-        <h1>🌶️ ระบบคำนวณและวิเคราะห์ต้นทุนผลิตน้ำพริกกากหมู</h1>
-        <p>ระบุสูตร ปริมาณ ราคา และสัดส่วนเป้าหมาย ระบบจะคำนวณแยกรายวัตถุดิบและยอดรวมให้ทันที</p>
+        <h1>🌶️ ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (เวอร์ชันสลับหน่วย กิโลฯ/กรัม)</h1>
+        <p>สามารถเลือกหน่วยนับเป็นกิโลกรัมหรือกรัมได้ในแต่ละแถว ระบบจะแปลงสัดส่วนราคาให้อัตโนมัติ</p>
     </div>
 
     <div class="card">
-        <h2>📋 ตารางสูตรวัตถุดิบและต้นทุนแยกตามรอบการผลิต (ฐานเริ่มต้น: บรรจุได้ 100 ถุง)</h2>
+        <h2>📋 ตารางสูตรวัตถุดิบและต้นทุนผลิต (ฐานสูตรเริ่มต้น: บรรจุได้ 100 ถุง)</h2>
         <div style="text-align: right;">
             <button class="btn-add" onclick="addRow()">➕ เพิ่มรายการวัตถุดิบ</button>
         </div>
@@ -69,71 +69,84 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 20%;">ชื่อวัตถุดิบ</th>
-                        <th style="width: 10%;">จำนวนซื้อ</th>
-                        <th style="width: 12%;">ราคาซื้อ (บาท)</th>
-                        <th style="width: 10%;">หน่วยซื้อ</th>
-                        <th style="width: 15%;">จำนวนที่ใช้จริงในรอบนี้</th>
-                        <th style="width: 10%;">หน่วยใช้</th>
-                        <th style="width: 15%; background: #fef2f2; color: #991b1b;">ต้นทุนในรอบนี้ (บาท)</th>
-                        <th style="width: 8%;">จัดการ</th>
+                        <th style="width: 25%;">ชื่อวัตถุดิบ</th>
+                        <th style="width: 20%;">ราคาต่อกิโลกรัม (บาท)</th>
+                        <th style="width: 18%;">หน่วยที่ใช้จริงในสูตร</th>
+                        <th style="width: 15%;">จำนวนที่ใช้จริง</th>
+                        <th style="width: 15%; background: #fef2f2; color: #991b1b;">ต้นทุนรอบนี้ (บาท)</th>
+                        <th style="width: 7%;">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="ingredient_tbody">
                     <tr>
                         <td><input type="text" class="ing-name" value="มันหมูติดหนัง"></td>
-                        <td><input type="number" class="ing-buy-qty" value="20" oninput="calculateLiveCosts()"></td>
                         <td><input type="number" class="ing-price" value="70" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโล"></td>
+                        <td>
+                            <select class="ing-unit" onchange="calculateLiveCosts()">
+                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
+                                <option value="กรัม">กรัม (g)</option>
+                            </select>
+                        </td>
                         <td><input type="number" class="ing-use-qty" value="20" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-use-unit" value="กิโล"></td>
                         <td class="item-total-cost cost-cell">0.00</td>
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="หัวหอมแดงไทย"></td>
-                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
                         <td><input type="number" class="ing-price" value="95" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโล"></td>
+                        <td>
+                            <select class="ing-unit" onchange="calculateLiveCosts()">
+                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
+                                <option value="กรัม">กรัม (g)</option>
+                            </select>
+                        </td>
                         <td><input type="number" class="ing-use-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-use-unit" value="กิโล"></td>
                         <td class="item-total-cost cost-cell">0.00</td>
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="กระเทียม"></td>
-                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
                         <td><input type="number" class="ing-price" value="75" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโล"></td>
+                        <td>
+                            <select class="ing-unit" onchange="calculateLiveCosts()">
+                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
+                                <option value="กรัม">กรัม (g)</option>
+                            </select>
+                        </td>
                         <td><input type="number" class="ing-use-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-use-unit" value="กิโล"></td>
                         <td class="item-total-cost cost-cell">0.00</td>
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="พริกแห้งจินดา"></td>
-                        <td><input type="number" class="ing-buy-qty" value="0.5" oninput="calculateLiveCosts()"></td>
                         <td><input type="number" class="ing-price" value="125" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโล"></td>
+                        <td>
+                            <select class="ing-unit" onchange="calculateLiveCosts()">
+                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
+                                <option value="กรัม">กรัม (g)</option>
+                            </select>
+                        </td>
                         <td><input type="number" class="ing-use-qty" value="0.5" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-use-unit" value="กิโล"></td>
                         <td class="item-total-cost cost-cell">0.00</td>
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="ผงปาปริก้า"></td>
-                        <td><input type="number" class="ing-buy-qty" value="450" oninput="calculateLiveCosts()"></td>
                         <td><input type="number" class="ing-price" value="85" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กรัม"></td>
+                        <td>
+                            <select class="ing-unit" onchange="calculateLiveCosts()">
+                                <option value="กิโลกรัม">กิโลกรัม (kg)</option>
+                                <option value="กรัม" selected>กรัม (g)</option>
+                            </select>
+                        </td>
                         <td><input type="number" class="ing-use-qty" value="40" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-use-unit" value="กรัม"></td>
                         <td class="item-total-cost cost-cell">0.00</td>
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr class="total-row">
-                        <td colspan="6" style="text-align: right; padding: 12px;">💰 ราคารวมต้นทุนวัตถุดิบทั้งหมดต่อรอบการผลิตนี้:</td>
+                        <td colspan="4" style="text-align: right; padding: 12px;">💰 ราคารวมต้นทุนวัตถุดิบทั้งหมดต่อรอบการผลิตนี้:</td>
                         <td id="grand_total_cell" class="cost-cell" style="font-size: 1.15em; background: #fee2e2;">0.00</td>
                         <td>บาท</td>
                     </tr>
@@ -166,45 +179,50 @@
 </div>
 
 <script>
-    // รันการคำนวณราคาครั้งแรกเมื่อเปิดหน้ากระดานเว็บ
     window.onload = function() {
         calculateLiveCosts();
     };
 
-    // ฟังก์ชันคำนวณและสรุปยอดเงินรายชิ้น และ ยอดรวมสุทธิในตาราง (Live Update)
+    // ปรับปรุงการคำนวณแบบ Live Update ให้รองรับการแปลงหน่วยกิโลกรัมและกรัมจาก Dropdown
     function calculateLiveCosts() {
         const rows = document.querySelectorAll('#ingredient_tbody tr');
         let grandTotal = 0;
 
         rows.forEach(row => {
-            const buyQty = parseFloat(row.querySelector('.ing-buy-qty').value) || 1;
-            const price = parseFloat(row.querySelector('.ing-price').value) || 0;
+            const pricePerKg = parseFloat(row.querySelector('.ing-price').value) || 0;
+            const unitType = row.querySelector('.ing-unit').value;
             const useQty = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
 
-            // สูตร: (ราคาซื้อ / ปริมาณซื้อ) * ปริมาณใช้จริง
-            const itemCost = (price / buyQty) * useQty;
-            grandTotal += itemCost;
+            let itemCost = 0;
+            if (unitType === "กิโลกรัม") {
+                // ถ้าหน่วยเป็นกิโลกรัม คูณตรงๆ ได้เลย
+                itemCost = pricePerKg * useQty;
+            } else if (unitType === "กรัม") {
+                // ถ้าหน่วยเป็นกรัม ทอนราคาต่อกิโลกรัมลงมาหาร 1000 ก่อนแล้วค่อยคูณ
+                itemCost = (pricePerKg / 1000) * useQty;
+            }
 
-            // แสดงราคารายวัตถุดิบในแถวนั้นๆ
+            grandTotal += itemCost;
             row.querySelector('.item-total-cost').innerText = itemCost.toFixed(2);
         });
 
-        // แสดงราคารวมทั้งหมดที่แถวสรุปด้านล่างตาราง
         document.getElementById('grand_total_cell').innerText = grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         return grandTotal;
     }
 
-    // ฟังก์ชันสำหรับเพิ่มแถววัตถุดิบใหม่
     function addRow() {
         const tbody = document.getElementById('ingredient_tbody');
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><input type="text" class="ing-name" placeholder="ชื่อวัตถุดิบ"></td>
-            <td><input type="number" class="ing-buy-qty" value="1" oninput="calculateLiveCosts()"></td>
-            <td><input type="number" class="ing-price" value="0" oninput="calculateLiveCosts()"></td>
-            <td><input type="text" class="ing-buy-unit" placeholder="หน่วยซื้อ"></td>
-            <td><input type="number" class="ing-use-qty" value="0" oninput="calculateLiveCosts()"></td>
-            <td><input type="text" class="ing-use-unit" placeholder="หน่วยใช้"></td>
+            <td><input type="number" class="ing-price" value="0" oninput="calculateLiveCosts()" step="0.01"></td>
+            <td>
+                <select class="ing-unit" onchange="calculateLiveCosts()">
+                    <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
+                    <option value="กรัม">กรัม (g)</option>
+                </select>
+            </td>
+            <td><input type="number" class="ing-use-qty" value="0" oninput="calculateLiveCosts()" step="0.01"></td>
             <td class="item-total-cost cost-cell">0.00</td>
             <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
         `;
@@ -212,7 +230,6 @@
         calculateLiveCosts();
     }
 
-    // ฟังก์ชันลบแถววัตถุดิบ
     function deleteRow(btn) {
         if(confirm('ต้องการลบวัตถุดิบรายการนี้ออกจากสูตรใช่หรือไม่?')) {
             btn.parentElement.parentElement.remove();
@@ -220,7 +237,6 @@
         }
     }
 
-    // โหมด 1: เมื่อกรอกวัตถุดิบที่มี -> ระบบจะนำสัดส่วนนั้นไปคูณปรับช่อง "จำนวนที่ใช้จริง" ในตารางให้ทันที
     function calcBySupply() {
         const haveMat = parseFloat(document.getElementById('have_main_mat').value);
         const rows = document.querySelectorAll('#ingredient_tbody tr');
@@ -228,22 +244,18 @@
         if (rows.length === 0) { alert('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 รายการ'); return; }
         if (isNaN(haveMat) || haveMat <= 0) { alert('กรุณาระบุปริมาณวัตถุดิบที่มีให้ถูกต้อง'); return; }
 
-        // คำนวณตัวคูณสเกล (อิงจากปริมาณใช้เดิมของวัตถุดิบแถวแรกสุด)
         const baseUseQty = parseFloat(rows[0].querySelector('.ing-use-qty').value) || 1;
         const factor = haveMat / baseUseQty;
 
-        // ปรับตัวเลขในช่องใช้จริงของทุกแถวตามสัดส่วนใหม่แบบอัตโนมัติ
         rows.forEach((row, index) => {
             if(index === 0) {
                 row.querySelector('.ing-use-qty').value = haveMat;
             } else {
                 const currentVal = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
-                // ในกรณีปรับปุ่ม แต่ถ้าค่าเดิมเป็น 0 ให้คงเดิม หรือคำนวณตามสัดส่วนเดิมคูณตัวแปร factor
                 row.querySelector('.ing-use-qty').value = (currentVal * factor).toFixed(2);
             }
         });
 
-        // สั่งตารางคำนวณราคารวมและรายชิ้นใหม่รอบตัว
         const finalGrandCost = calculateLiveCosts();
         const estimatedBags = Math.floor(100 * factor);
 
@@ -252,11 +264,10 @@
         resDiv.innerHTML = `
             <strong>💡 ปรับสเกลสูตรสำเร็จ (ตามวัตถุดิบหลัก):</strong><br>
             • จะได้น้ำพริกบรรจุถุงประมาณ: <span class="highlight" style="font-size:1.3em;">${estimatedBags.toLocaleString()}</span> ถุง<br>
-            • ต้นทุนรวมรอบผลิตใหม่นี้: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท
+            • ต้นทุนรวมวัตถุดิบรอบผลิตใหม่นี้: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท
         `;
     }
 
-    // โหมด 2: เมื่อต้องการจำนวนถุงเป้าหมาย -> นำสัดส่วนไปคูณและอัปเดตเลขลงในตารางโดยตรง
     function calcByDemand() {
         const needBags = parseFloat(document.getElementById('need_bags').value);
         const rows = document.querySelectorAll('#ingredient_tbody tr');
@@ -264,16 +275,13 @@
         if (isNaN(needBags) || needBags <= 0) { alert('กรุณาระบุจำนวนถุงเป้าหมายให้ถูกต้อง'); return; }
         if (rows.length === 0) { alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ'); return; }
 
-        // อิงเป้าหมายจากสัดส่วนฐานสูตรที่หน้ากระดานปัจจุบันมองว่าเท่ากับ 100 ถุง
         const factor = needBags / 100;
 
         rows.forEach(row => {
             const currentUse = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
-            // คำนวณปรับสเกลยอดใช้ลงช่อง Input ของแถวนั้นๆ โดยตรงเพื่อให้ User เห็นค่าและแก้ต่อได้
             row.querySelector('.ing-use-qty').value = (currentUse * factor).toFixed(2);
         });
 
-        // สั่ง Re-Calculate ต้นทุนเงินทั้งหมดใหม่หลังจากเปลี่ยนค่าปริมาณการใช้งานในตารางแล้ว
         const finalGrandCost = calculateLiveCosts();
         const costPerBag = finalGrandCost / needBags;
 
@@ -283,10 +291,9 @@
             <strong>🎯 ปรับสเกลยอดการใช้งานเรียบร้อย:</strong><br>
             • ยอดผลิตเป้าหมาย: <b>${needBags}</b> ถุง<br>
             • ต้นทุนรวมเฉพาะวัตถุดิบทั้งสิ้น: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท<br>
-            • เฉลี่ยต้นทุนแปรผันต่อหน่วย: <span class="highlight">${costPerBag.toFixed(2)}</span> บาท/ถุง
+            • เฉลี่ยต้นทุนเฉพาะวัตถุดิบต่อหน่วย: <span class="highlight">${costPerBag.toFixed(2)}</span> บาท/ถุง
         `;
         
-        // รีเซ็ตค่าเป้าหมายฐานกลับไปเป็น 100 ในการคำนวณรอบถัดไปเพื่อป้องกันการคูณซ้อน
         document.getElementById('need_bags').value = 100;
     }
 </script>
