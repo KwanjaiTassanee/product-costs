@@ -51,6 +51,11 @@
         .total-row { background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1; }
         .cost-cell { color: #b91c1c; font-weight: bold; }
 
+        /* สไตล์ของ Shopping List */
+        .shopping-list { background: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed #e67e22; }
+        .shopping-list ul { margin: 5px 0; padding-left: 20px; }
+        .shopping-list li { margin-bottom: 3px; }
+
         @media (min-width: 768px) {
             body { padding: 25px; }
             .header-banner h1 { font-size: 1.8em; }
@@ -208,9 +213,6 @@
         calculateLiveCosts();
     };
 
-    /**
-     * ฟังก์ชันรันระบบบัญชีต้นทุนหมุนเวียนแบบ Real-time (แก้ไขตัวสะกดคลาสเรียบร้อย)
-     */
     function calculateLiveCosts() {
         const rows = document.querySelectorAll('#ingredient_tbody tr');
         let grandTotal = 0;
@@ -221,11 +223,9 @@
             const unitType = row.querySelector('.ing-unit').value;
             const useQty = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
 
-            // ขั้นตอนที่ 1: ระบบคำนวณราคาเฉลี่ยต่อกิโลกรัมให้เห็นในตาราง [แก้ไขจาก img-unit-cost เป็น ing-unit-cost]
             const pricePerKg = buyPrice / buyQty;
             row.querySelector('.ing-unit-cost').value = pricePerKg.toFixed(2);
 
-            // ขั้นตอนที่ 2: คำนวณสัดส่วนต้นทุนตามหน่วยใช้งานจริงในสูตร
             let itemCost = 0;
             if (unitType === "กิโลกรัม") {
                 itemCost = pricePerKg * useQty;
@@ -241,7 +241,6 @@
         return grandTotal;
     }
 
-    // ฟังก์ชันเพิ่มแถววัตถุดิบชิ้นใหม่
     function addRow() {
         const tbody = document.getElementById('ingredient_tbody');
         const tr = document.createElement('tr');
@@ -302,6 +301,9 @@
         `;
     }
 
+    /* * ปรับฟังก์ชันการคำนวณตามเป้าหมายถุง (calcByDemand) 
+     * ให้วนลูปดึงข้อมูลวัตถุดิบทุกตัวที่อัปเดตสเกลแล้วมาสรุปเป็น Shopping List
+     */
     function calcByDemand() {
         const needBags = parseFloat(document.getElementById('need_bags').value);
         const rows = document.querySelectorAll('#ingredient_tbody tr');
@@ -311,11 +313,26 @@
 
         const factor = needBags / 100;
 
+        // สตาร์ทตัวแปรสะสมข้อความสรุปวัตถุดิบ
+        let summaryListHTML = `<div class="shopping-list"><strong>🛒 สรุปรายการวัตถุดิบที่ต้องใช้สำหรับผลิต ${needBags} ถุง:</strong><ul>`;
+
         rows.forEach(row => {
+            // ดึงชื่อวัตถุดิบ ปริมาณฐาน และหน่วยนับปัจจุบันในแถว
+            const name = row.querySelector('.ing-name').value || 'วัตถุดิบไม่มีชื่อ';
             const currentUse = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
-            row.querySelector('.ing-use-qty').value = (currentUse * factor).toFixed(2);
+            const unit = row.querySelector('.ing-unit').value;
+
+            // 1. คำนวณขยายสัดส่วนน้ำหนักลงไปในตารางให้ User เห็นค่า
+            const newUseQty = currentUse * factor;
+            row.querySelector('.ing-use-qty').value = newUseQty.toFixed(2);
+
+            // 2. บันทึกเพิ่มรายการสรุปลงข้อความ
+            summaryListHTML += `<li><b>${name}:</b>ใช้จำนวน <span style="color:#d35400; font-weight:bold;">${newUseQty.toFixed(2)}</span> ${unit}</li>`;
         });
 
+        summaryListHTML += `</ul></div>`;
+
+        // รันสูตร Re-Calculate บัญชีการเงินรวม
         const finalGrandCost = calculateLiveCosts();
         const costPerBag = finalGrandCost / needBags;
 
@@ -326,6 +343,7 @@
             • ยอดผลิตเป้าหมาย: <b>${needBags}</b> ถุง<br>
             • ต้นทุนรวมเฉพาะวัตถุดิบทั้งสิ้น: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท<br>
             • เฉลี่ยต้นทุนเฉพาะวัตถุดิบต่อหน่วย: <span class="highlight">${costPerBag.toFixed(2)}</span> บาท/ถุง
+            ${summaryListHTML}
         `;
         
         document.getElementById('need_bags').value = 100;
