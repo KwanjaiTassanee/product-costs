@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Advanced Cost Accounting)</title>
+    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Fixed Version)</title>
     <style>
         body { font-family: 'Sarabun', sans-serif; background: #f4f6f9; padding: 10px; color: #1e293b; margin: 0; }
         .container { width: 100%; max-width: 1400px; margin: auto; box-sizing: border-box; }
@@ -64,7 +64,7 @@
 
 <div class="container">
     <div class="header-banner">
-        <h1>🌶️ ระบบคำนวณต้นทุนน้ำพริกกากหมู (คอลัมน์วิเคราะห์แยกจำนวนและราคาซื้อ)</h1>
+        <h1>🌶️ ระบบคำนวณต้นทุนน้ำพริกกากหมู (เวอร์ชันแก้ไขจุดบกพร่อง)</h1>
         <p>กรอกจำนวนซื้อและราคารวม ระบบจะหาค่าเฉลี่ยต่อกิโลกรัมให้ และนำไปคำนวณกับปริมาณใช้จริงในสูตรแบบเรียลไทม์</p>
     </div>
 
@@ -209,9 +209,7 @@
     };
 
     /**
-     * ฟังก์ชันรันระบบบัญชีต้นทุนหมุนเวียนแบบ Real-time:
-     * 1. หาค่าเฉลี่ยต่อกิโลกรัม = ราคาที่ซื้อทั้งหมด ÷ จำนวนที่ซื้อ
-     * 2. หากผู้ใช้เลือกหน่วยตักใช้เป็น "กรัม" ระบบจะทอนราคากลางต่อกิโลกรัมลงไปหาร 1,000 ก่อน แล้วคูณจำนวนใช้จริง
+     * ฟังก์ชันรันระบบบัญชีต้นทุนหมุนเวียนแบบ Real-time (แก้ไขตัวสะกดคลาสเรียบร้อย)
      */
     function calculateLiveCosts() {
         const rows = document.querySelectorAll('#ingredient_tbody tr');
@@ -223,9 +221,9 @@
             const unitType = row.querySelector('.ing-unit').value;
             const useQty = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
 
-            // ขั้นตอนที่ 1: ระบบคำนวณราคาเฉลี่ยต่อกิโลกรัมให้เห็นในตาราง
+            // ขั้นตอนที่ 1: ระบบคำนวณราคาเฉลี่ยต่อกิโลกรัมให้เห็นในตาราง [แก้ไขจาก img-unit-cost เป็น ing-unit-cost]
             const pricePerKg = buyPrice / buyQty;
-            row.querySelector('.img-unit-cost').value = pricePerKg.toFixed(2);
+            row.querySelector('.ing-unit-cost').value = pricePerKg.toFixed(2);
 
             // ขั้นตอนที่ 2: คำนวณสัดส่วนต้นทุนตามหน่วยใช้งานจริงในสูตร
             let itemCost = 0;
@@ -243,7 +241,7 @@
         return grandTotal;
     }
 
-    // ฟังก์ชันเพิ่มแถววัตถุดิบชิ้นใหม่โดยอิงตามโครงสร้างคอลัมน์บัญชีต้นทุนอย่างถูกต้อง
+    // ฟังก์ชันเพิ่มแถววัตถุดิบชิ้นใหม่
     function addRow() {
         const tbody = document.getElementById('ingredient_tbody');
         const tr = document.createElement('tr');
