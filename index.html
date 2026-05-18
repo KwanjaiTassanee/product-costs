@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Purchase vs Recipe Split)</title>
+    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Advanced Cost Accounting)</title>
     <style>
         body { font-family: 'Sarabun', sans-serif; background: #f4f6f9; padding: 10px; color: #1e293b; margin: 0; }
-        .container { width: 100%; max-width: 1300px; margin: auto; box-sizing: border-box; }
+        .container { width: 100%; max-width: 1400px; margin: auto; box-sizing: border-box; }
         
         .header-banner { background: linear-gradient(135deg, #d35400, #e67e22); color: white; padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .header-banner h1 { margin: 0; font-size: 1.5em; line-height: 1.3; }
@@ -20,18 +20,21 @@
         label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9em; color: #475569; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
         
-        /* สไตล์การแบ่งสัดส่วนคอลัมน์ในตาราง */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.88em; min-width: 950px; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 1100px; }
+        th, td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; }
         th { background: #f8fafc; color: #475569; font-weight: bold; }
         
-        /* การทำสีพื้นหลังแยก Section ให้ผู้ใช้มองง่าย */
-        .th-buy { background: #eff6ff; color: #1e40af; text-align: center; } /* สีฟ้าฝั่งซื้อ */
-        .th-use { background: #fff7ed; color: #9a3412; text-align: center; } /* สีส้มฝั่งใช้จริง */
+        /* ไฮไลต์แบ่งสีแยกกระบวนการกรอกข้อมูล */
+        .th-buy { background: #eff6ff; color: #1e40af; text-align: center; } /* ส่วนซื้อเข้า */
+        .th-calc { background: #f0fdf4; color: #166534; text-align: center; } /* ส่วนระบบคำนวณราคาต่อกิโลให้ */
+        .th-use { background: #fff7ed; color: #9a3412; text-align: center; } /* ส่วนตักสูตรไปใช้จริง */
         
         table input, table select { padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 1em; width: 100%; box-sizing: border-box; }
         table input:focus, table select:focus { border-color: #e67e22; outline: none; background: #fff7ed; }
+        
+        /* สไตล์ช่องที่ระบบสลักคำนวณให้อัตโนมัติ (ห้ามแก้) */
+        .readonly-input { background: #f1f5f9; color: #475569; font-weight: bold; text-align: right; }
         
         button { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.2s; margin-top: 5px; }
         .btn-primary { background: #e67e22; color: white; }
@@ -61,12 +64,12 @@
 
 <div class="container">
     <div class="header-banner">
-        <h1>🌶️ ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (เวอร์ชันแยกวัตถุดิบ ซื้อ vs ใช้จริง)</h1>
-        <p>แยกฝั่งบันทึกราคาซื้อต่อกิโลกรัมจากตลาด และแปลงหน่วยการคำนวณฝั่งใช้จริงอัตโนมัติเมื่อเลือก กิโลกรัม/กรัม</p>
+        <h1>🌶️ ระบบคำนวณต้นทุนน้ำพริกกากหมู (คอลัมน์วิเคราะห์แยกจำนวนและราคาซื้อ)</h1>
+        <p>กรอกจำนวนซื้อและราคารวม ระบบจะหาค่าเฉลี่ยต่อกิโลกรัมให้ และนำไปคำนวณกับปริมาณใช้จริงในสูตรแบบเรียลไทม์</p>
     </div>
 
     <div class="card">
-        <h2>📋 ตารางเปรียบเทียบและทอนต้นทุนวัตถุดิบ (ฐานสูตรเริ่มต้น: บรรจุสำเร็จได้ 100 ถุง)</h2>
+        <h2>📋 ตารางแจกแจงราคาซื้อและสัดส่วนใช้จริง (เกณฑ์สูตรเริ่มต้น: บรรจุได้ 100 ถุง)</h2>
         <div style="text-align: right;">
             <button class="btn-add" onclick="addRow()">➕ เพิ่มรายการวัตถุดิบ</button>
         </div>
@@ -74,24 +77,27 @@
             <table>
                 <thead>
                     <tr>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 20%;">ชื่อวัตถุดิบ</th>
-                        <th colspan="2" class="th-buy">🛒 วัตถุดิบที่ซื้อมา (ฝั่งตลาด)</th>
-                        <th colspan="2" class="th-use">🍳 วัตถุดิบที่ใช้จริง (ฝั่งสูตรผลิต)</th>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 15%; background: #fef2f2; color: #991b1b;">ต้นทุนรอบนี้ (บาท)</th>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 8%;">จัดการ</th>
+                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 15%;">ชื่อวัตถุดิบ</th>
+                        <th colspan="2" class="th-buy">🛒 ฝั่งจัดซื้อจากตลาด</th>
+                        <th class="th-calc">📊 ระบบคำนวณให้</th>
+                        <th colspan="2" class="th-use">🍳 ฝั่งตักสูตรใช้ผลิตจริง</th>
+                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 12%; background: #fef2f2; color: #991b1b;">ต้นทุนรอบนี้ (บาท)</th>
+                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 6%;">จัดการ</th>
                     </tr>
                     <tr>
-                        <th class="th-buy" style="width: 15%;">ราคาต่อกิโลกรัม (บาท)</th>
-                        <th class="th-buy" style="width: 12%;">หน่วยซื้อ</th>
-                        <th class="th-use" style="width: 15%;">หน่วยที่ใช้ในสูตร</th>
-                        <th class="th-use" style="width: 15%;">จำนวนที่ใช้จริง</th>
+                        <th class="th-buy" style="width: 10%;">จำนวนที่ซื้อ (กิโล)</th>
+                        <th class="th-buy" style="width: 12%;">ราคาที่ซื้อทั้งหมด (บาท)</th>
+                        <th class="th-calc" style="width: 15%;">ราคาต่อหน่วย (บาท/กิโล)</th>
+                        <th class="th-use" style="width: 15%;">หน่วยที่ตักใช้ในสูตร</th>
+                        <th class="th-use" style="width: 12%;">จำนวนที่ใช้จริง</th>
                     </tr>
                 </thead>
                 <tbody id="ingredient_tbody">
                     <tr>
                         <td><input type="text" class="ing-name" value="มันหมูติดหนัง"></td>
-                        <td><input type="number" class="ing-price" value="70" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+                        <td><input type="number" class="ing-buy-qty" value="20" oninput="calculateLiveCosts()"></td>
+                        <td><input type="number" class="ing-buy-price" value="1400" oninput="calculateLiveCosts()"></td>
+                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
                         <td>
                             <select class="ing-unit" onchange="calculateLiveCosts()">
                                 <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
@@ -104,8 +110,9 @@
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="หัวหอมแดงไทย"></td>
-                        <td><input type="number" class="ing-price" value="95" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
+                        <td><input type="number" class="ing-buy-price" value="190" oninput="calculateLiveCosts()"></td>
+                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
                         <td>
                             <select class="ing-unit" onchange="calculateLiveCosts()">
                                 <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
@@ -118,8 +125,9 @@
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="กระเทียม"></td>
-                        <td><input type="number" class="ing-price" value="75" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
+                        <td><input type="number" class="ing-buy-price" value="150" oninput="calculateLiveCosts()"></td>
+                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
                         <td>
                             <select class="ing-unit" onchange="calculateLiveCosts()">
                                 <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
@@ -132,8 +140,9 @@
                     </tr>
                     <tr>
                         <td><input type="text" class="ing-name" value="พริกแห้งจินดา"></td>
-                        <td><input type="number" class="ing-price" value="125" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+                        <td><input type="number" class="ing-buy-qty" value="0.5" oninput="calculateLiveCosts()"></td>
+                        <td><input type="number" class="ing-buy-price" value="62.50" oninput="calculateLiveCosts()"></td>
+                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
                         <td>
                             <select class="ing-unit" onchange="calculateLiveCosts()">
                                 <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
@@ -145,9 +154,10 @@
                         <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
                     </tr>
                     <tr>
-                        <td><input type="text" class="ing-name" value="ผ5 ปาปริก้า"></td>
-                        <td><input type="number" class="ing-price" value="188.89" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+                        <td><input type="text" class="ing-name" value="ผงปาปริก้า"></td>
+                        <td><input type="number" class="ing-buy-qty" value="1" oninput="calculateLiveCosts()"></td>
+                        <td><input type="number" class="ing-buy-price" value="85" oninput="calculateLiveCosts()"></td>
+                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
                         <td>
                             <select class="ing-unit" onchange="calculateLiveCosts()">
                                 <option value="กิโลกรัม">กิโลกรัม (kg)</option>
@@ -161,7 +171,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="total-row">
-                        <td colspan="5" style="text-align: right; padding: 12px;">💰 ราคารวมต้นทุนวัตถุดิบทั้งหมดต่อรอบการผลิตนี้:</td>
+                        <td colspan="6" style="text-align: right; padding: 12px;">💰 ราคารวมต้นทุนวัตถุดิบทั้งหมดต่อรอบการผลิตนี้:</td>
                         <td id="grand_total_cell" class="cost-cell" style="font-size: 1.15em; background: #fee2e2;">0.00</td>
                         <td>บาท</td>
                     </tr>
@@ -199,25 +209,29 @@
     };
 
     /**
-     * ค้นหาและคำนวณต้นทุนรายแถวแบบ Dynamic 
-     * ดึงค่าราคาฝั่งซื้อ (ต่อกิโลกรัม) ไปแปรผันผกผันกับหน่วยตักใช้ฝั่งสูตรจริง
+     * ฟังก์ชันรันระบบบัญชีต้นทุนหมุนเวียนแบบ Real-time:
+     * 1. หาค่าเฉลี่ยต่อกิโลกรัม = ราคาที่ซื้อทั้งหมด ÷ จำนวนที่ซื้อ
+     * 2. หากผู้ใช้เลือกหน่วยตักใช้เป็น "กรัม" ระบบจะทอนราคากลางต่อกิโลกรัมลงไปหาร 1,000 ก่อน แล้วคูณจำนวนใช้จริง
      */
     function calculateLiveCosts() {
         const rows = document.querySelectorAll('#ingredient_tbody tr');
         let grandTotal = 0;
 
         rows.forEach(row => {
-            // ดึงราคาต่อกิโลกรัมฝั่งซื้อมาคำนวณเป็นหลักตามที่คุณระบุ
-            const pricePerKg = parseFloat(row.querySelector('.ing-price').value) || 0;
+            const buyQty = parseFloat(row.querySelector('.ing-buy-qty').value) || 1;
+            const buyPrice = parseFloat(row.querySelector('.ing-buy-price').value) || 0;
             const unitType = row.querySelector('.ing-unit').value;
             const useQty = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
 
+            // ขั้นตอนที่ 1: ระบบคำนวณราคาเฉลี่ยต่อกิโลกรัมให้เห็นในตาราง
+            const pricePerKg = buyPrice / buyQty;
+            row.querySelector('.img-unit-cost').value = pricePerKg.toFixed(2);
+
+            // ขั้นตอนที่ 2: คำนวณสัดส่วนต้นทุนตามหน่วยใช้งานจริงในสูตร
             let itemCost = 0;
             if (unitType === "กิโลกรัม") {
-                // ถ้าตักใช้ในสูตรเป็นกิโลกรัม: คูณตรงตัว
                 itemCost = pricePerKg * useQty;
             } else if (unitType === "กรัม") {
-                // ถ้าตักใช้ในสูตรเปลี่ยนหน่วยเป็นกรัม: ทอนเรทราคาซื้อกิโลกรัมลงไปหารด้วย 1,000 ก่อนเพื่อหาต้นทุนต่อกรัม
                 itemCost = (pricePerKg / 1000) * useQty;
             }
 
@@ -229,14 +243,15 @@
         return grandTotal;
     }
 
-    // ฟังก์ชันเพิ่มแถววัตถุดิบรายการใหม่
+    // ฟังก์ชันเพิ่มแถววัตถุดิบชิ้นใหม่โดยอิงตามโครงสร้างคอลัมน์บัญชีต้นทุนอย่างถูกต้อง
     function addRow() {
         const tbody = document.getElementById('ingredient_tbody');
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><input type="text" class="ing-name" placeholder="ชื่อวัตถุดิบ"></td>
-            <td><input type="number" class="ing-price" value="0" oninput="calculateLiveCosts()" step="0.01"></td>
-            <td><input type="text" class="ing-buy-unit" value="กิโลกรัม" readonly style="background: #f1f5f9; color: #64748b;"></td>
+            <td><input type="number" class="ing-buy-qty" value="1" oninput="calculateLiveCosts()"></td>
+            <td><input type="number" class="ing-buy-price" value="0" oninput="calculateLiveCosts()"></td>
+            <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
             <td>
                 <select class="ing-unit" onchange="calculateLiveCosts()">
                     <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
@@ -263,7 +278,7 @@
         const rows = document.querySelectorAll('#ingredient_tbody tr');
         
         if (rows.length === 0) { alert('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 รายการ'); return; }
-        if (isNaN(haveMat) || haveMat <= 0) { alert('กรุณาระบุปริมาณวัตถุดิบหลักที่มีให้ถูกต้อง'); return; }
+        if (isNaN(haveMat) || haveMat <= 0) { alert('กรุณาระบุปริมาณวัตถุดิบที่มีให้ถูกต้อง'); return; }
 
         const baseUseQty = parseFloat(rows[0].querySelector('.ing-use-qty').value) || 1;
         const factor = haveMat / baseUseQty;
