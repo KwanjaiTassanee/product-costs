@@ -3,227 +3,495 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Fixed Version)</title>
+    <title>ระบบคำนวณต้นทุนผลิตน้ำพริกกากหมู (Full Template)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #f4f6f9; padding: 10px; color: #1e293b; margin: 0; }
-        .container { width: 100%; max-width: 1400px; margin: auto; box-sizing: border-box; }
-        
-        .header-banner { background: linear-gradient(135deg, #d35400, #e67e22); color: white; padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .header-banner h1 { margin: 0; font-size: 1.5em; line-height: 1.3; }
-        .header-banner p { margin: 8px 0 0 0; font-size: 0.85em; opacity: 0.9; }
-        
-        .grid { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #d35400; box-sizing: border-box; }
-        h2 { color: #2c3e50; font-size: 1.1em; margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9em; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 1100px; }
-        th, td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; }
-        th { background: #f8fafc; color: #475569; font-weight: bold; }
-        
-        /* ไฮไลต์แบ่งสีแยกกระบวนการกรอกข้อมูล */
-        .th-buy { background: #eff6ff; color: #1e40af; text-align: center; } /* ส่วนซื้อเข้า */
-        .th-calc { background: #f0fdf4; color: #166534; text-align: center; } /* ส่วนระบบคำนวณราคาต่อกิโลให้ */
-        .th-use { background: #fff7ed; color: #9a3412; text-align: center; } /* ส่วนตักสูตรไปใช้จริง */
-        
-        table input, table select { padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 1em; width: 100%; box-sizing: border-box; }
-        table input:focus, table select:focus { border-color: #e67e22; outline: none; background: #fff7ed; }
-        
-        /* สไตล์ช่องที่ระบบสลักคำนวณให้อัตโนมัติ (ห้ามแก้) */
-        .readonly-input { background: #f1f5f9; color: #475569; font-weight: bold; text-align: right; }
-        
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; transition: 0.2s; margin-top: 5px; }
-        .btn-primary { background: #e67e22; color: white; }
-        .btn-primary:hover { background: #d35400; }
-        .btn-secondary { background: #2ecc71; color: white; }
-        .btn-secondary:hover { background: #27ae60; }
-        .btn-add { background: #3b82f6; color: white; padding: 8px 15px; width: auto; font-size: 0.9em; margin-bottom: 10px; }
-        
-        .result-box { margin-top: 15px; padding: 15px; border-radius: 8px; line-height: 1.7; display: none; font-size: 0.95em; }
-        .res-supply { background: #f0fdf4; border: 1px solid #bbf7d0; }
-        .res-demand { background: #fff7ed; border: 1px solid #ffedd5; }
-        .highlight { font-weight: bold; color: #dc2626; font-size: 1.1em; }
-        
-        .total-row { background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1; }
-        .cost-cell { color: #b91c1c; font-weight: bold; }
-
-        /* สไตล์ของ Shopping List */
-        .shopping-list { background: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed #e67e22; }
-        .shopping-list ul { margin: 5px 0; padding-left: 20px; }
-        .shopping-list li { margin-bottom: 3px; }
-
-        @media (min-width: 768px) {
-            body { padding: 25px; }
-            .header-banner h1 { font-size: 1.8em; }
-            .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-            .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            h2 { font-size: 1.2em; }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: #f8fafc;
+        }
+        /* Custom scrollbar for table container */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body>
+<body class="text-slate-800 min-h-screen pb-12">
 
-<div class="container">
-    <div class="header-banner">
-        <h1>🌶️ ระบบคำนวณต้นทุนน้ำพริกกากหมู (เวอร์ชันแก้ไขจุดบกพร่อง)</h1>
-        <p>กรอกจำนวนซื้อและราคารวม ระบบจะหาค่าเฉลี่ยต่อกิโลกรัมให้ และนำไปคำนวณกับปริมาณใช้จริงในสูตรแบบเรียลไทม์</p>
-    </div>
-
-    <div class="card">
-        <h2>📋 ตารางแจกแจงราคาซื้อและสัดส่วนใช้จริง (เกณฑ์สูตรเริ่มต้น: บรรจุได้ 100 ถุง)</h2>
-        <div style="text-align: right;">
-            <button class="btn-add" onclick="addRow()">➕ เพิ่มรายการวัตถุดิบ</button>
+<div class="max-w-[1500px] mx-auto px-4 pt-6">
+    <div class="bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 rounded-2xl p-6 md:p-8 text-white shadow-xl mb-6 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-[120px] md:text-[180px] pointer-events-none">
+            <i class="fa-solid fa-pepper-hot"></i>
         </div>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 15%;">ชื่อวัตถุดิบ</th>
-                        <th colspan="2" class="th-buy">🛒 ฝั่งจัดซื้อจากตลาด</th>
-                        <th class="th-calc">📊 ระบบคำนวณให้</th>
-                        <th colspan="2" class="th-use">🍳 ฝั่งตักสูตรใช้ผลิตจริง</th>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 12%; background: #fef2f2; color: #991b1b;">ต้นทุนรอบนี้ (บาท)</th>
-                        <th rowspan="2" style="vertical-align: middle; text-align: center; width: 6%;">จัดการ</th>
-                    </tr>
-                    <tr>
-                        <th class="th-buy" style="width: 10%;">จำนวนที่ซื้อ (กิโล)</th>
-                        <th class="th-buy" style="width: 12%;">ราคาที่ซื้อทั้งหมด (บาท)</th>
-                        <th class="th-calc" style="width: 15%;">ราคาต่อหน่วย (บาท/กิโล)</th>
-                        <th class="th-use" style="width: 15%;">หน่วยที่ตักใช้ในสูตร</th>
-                        <th class="th-use" style="width: 12%;">จำนวนที่ใช้จริง</th>
-                    </tr>
-                </thead>
-                <tbody id="ingredient_tbody">
-                    <tr>
-                        <td><input type="text" class="ing-name" value="มันหมูติดหนัง"></td>
-                        <td><input type="number" class="ing-buy-qty" value="20" oninput="calculateLiveCosts()"></td>
-                        <td><input type="number" class="ing-buy-price" value="1400" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-                        <td>
-                            <select class="ing-unit" onchange="calculateLiveCosts()">
-                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
-                                <option value="กรัม">กรัม (g)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="ing-use-qty" value="20" oninput="calculateLiveCosts()"></td>
-                        <td class="item-total-cost cost-cell">0.00</td>
-                        <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="ing-name" value="หัวหอมแดงไทย"></td>
-                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td><input type="number" class="ing-buy-price" value="190" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-                        <td>
-                            <select class="ing-unit" onchange="calculateLiveCosts()">
-                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
-                                <option value="กรัม">กรัม (g)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="ing-use-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td class="item-total-cost cost-cell">0.00</td>
-                        <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="ing-name" value="กระเทียม"></td>
-                        <td><input type="number" class="ing-buy-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td><input type="number" class="ing-buy-price" value="150" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-                        <td>
-                            <select class="ing-unit" onchange="calculateLiveCosts()">
-                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
-                                <option value="กรัม">กรัม (g)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="ing-use-qty" value="2" oninput="calculateLiveCosts()"></td>
-                        <td class="item-total-cost cost-cell">0.00</td>
-                        <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="ing-name" value="พริกแห้งจินดา"></td>
-                        <td><input type="number" class="ing-buy-qty" value="0.5" oninput="calculateLiveCosts()"></td>
-                        <td><input type="number" class="ing-buy-price" value="62.50" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-                        <td>
-                            <select class="ing-unit" onchange="calculateLiveCosts()">
-                                <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
-                                <option value="กรัม">กรัม (g)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="ing-use-qty" value="0.5" oninput="calculateLiveCosts()"></td>
-                        <td class="item-total-cost cost-cell">0.00</td>
-                        <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="ing-name" value="ผงปาปริก้า"></td>
-                        <td><input type="number" class="ing-buy-qty" value="1" oninput="calculateLiveCosts()"></td>
-                        <td><input type="number" class="ing-buy-price" value="85" oninput="calculateLiveCosts()"></td>
-                        <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-                        <td>
-                            <select class="ing-unit" onchange="calculateLiveCosts()">
-                                <option value="กิโลกรัม">กิโลกรัม (kg)</option>
-                                <option value="กรัม" selected>กรัม (g)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="ing-use-qty" value="40" oninput="calculateLiveCosts()"></td>
-                        <td class="item-total-cost cost-cell">0.00</td>
-                        <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="6" style="text-align: right; padding: 12px;">💰 ราคารวมต้นทุนวัตถุดิบทั้งหมดต่อรอบการผลิตนี้:</td>
-                        <td id="grand_total_cell" class="cost-cell" style="font-size: 1.15em; background: #fee2e2;">0.00</td>
-                        <td>บาท</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="relative z-10">
+            <h1 class="text-2xl md:text-4xl font-bold flex items-center gap-3">
+                <i class="fa-solid fa-pepper-hot text-amber-300 animate-bounce"></i>
+                ระบบคำนวณต้นทุนน้ำพริกกากหมูรุ่นมืออาชีพ (ตารางวัตถุดิบเต็มสูตร)
+            </h1>
+            <p class="mt-2 text-sm md:text-base text-orange-100 max-w-3xl">
+                วิเคราะห์ต้นทุนอย่างละเอียด ครอบคลุมทั้งวัตถุดิบ, บรรจุภัณฑ์, สติกเกอร์, โสหุ้ยแฝงผลิต และต้นทุนค่าแรงตามวินาทีจริง พร้อมระบบปรับสเกลสูตรแบบอัจฉริยะสองทิศทาง
+            </p>
         </div>
     </div>
 
-    <div class="sub-grid">
-        <div class="card">
-            <h2>🛒 1. คำนวณขยายสูตรจาก "วัตถุดิบหลัก" ที่มีอยู่</h2>
-            <div class="input-group">
-                <label>ปริมาณวัตถุดิบหลักข้อแรก (แถวที่ 1) ที่คุณมีจริงฝั่งใช้ตอนนี้</label>
-                <input type="number" id="have_main_mat" placeholder="ตัวอย่างมีมันหมู: 40" step="0.01">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        <!-- Left & Center Side: Ingredients and Core Expenses (Takes 2 Columns) -->
+        <div class="xl:col-span-2 space-y-6">
+            
+            <!-- SECTION 1: INGREDIENTS TABLE (THE HEART OF THE SYSTEM) -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span class="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                            </span>
+                            1. ตารางระบุต้นทุนวัตถุดิบและสูตรใช้งาน (เกณฑ์สูตรผลิตมาตรฐาน: บรรจุได้ 100 ถุง)
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">
+                            ระบบโหลดวัตถุดิบ 15 รายการสำคัญให้เต็มสูตร ปรับเปลี่ยนปริมาณการซื้อ-ราคา และปริมาณที่ใช้จริงเพื่อคำนวณได้ทันที
+                        </p>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="addRow()" class="flex-1 sm:flex-initial px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-plus"></i> เพิ่มวัตถุดิบอื่น ๆ
+                        </button>
+                        <button onclick="openClearConfirmModal()" class="flex-1 sm:flex-initial px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white text-sm font-semibold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-broom"></i> 🧹 ล้างตัวเลข
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar border border-slate-100 rounded-xl">
+                    <table class="w-full text-left border-collapse min-w-[1100px]">
+                        <thead>
+                            <tr class="text-xs uppercase font-bold text-slate-600">
+                                <th rowspan="2" class="p-4 bg-slate-50 border-b border-slate-100 text-slate-700 text-center" style="width: 18%;">ชื่อวัตถุดิบ</th>
+                                <th colspan="2" class="p-2 bg-blue-50 text-blue-800 border-b border-blue-100 text-center text-xs">🛒 ฝั่งจัดซื้อจากตลาด</th>
+                                <th class="p-2 bg-emerald-50 text-emerald-800 border-b border-emerald-100 text-center text-xs">📊 ผลลัพธ์หน่วย</th>
+                                <th colspan="2" class="p-2 bg-orange-50 text-orange-800 border-b border-orange-100 text-center text-xs">🍳 ฝั่งตักสูตรผลิตจริง (ต่อ 100 ถุง)</th>
+                                <th rowspan="2" class="p-4 bg-red-50 text-red-800 border-b border-red-100 text-center" style="width: 12%;">ต้นทุนรอบนี้ (บาท)</th>
+                                <th rowspan="2" class="p-4 bg-slate-50 border-b border-slate-100 text-center" style="width: 6%;">จัดการ</th>
+                            </tr>
+                            <tr class="text-xs font-semibold text-slate-500 border-b border-slate-100">
+                                <th class="p-3 bg-blue-50/50 text-center" style="width: 11%;">จำนวนที่ซื้อ (กิโล)</th>
+                                <th class="p-3 bg-blue-50/50 text-center" style="width: 13%;">ราคารวมที่ซื้อ (บาท)</th>
+                                <th class="p-3 bg-emerald-50/50 text-center" style="width: 14%;">ราคาเฉลี่ย (บาท/กิโล)</th>
+                                <th class="p-3 bg-orange-50/50 text-center" style="width: 14%;">หน่วยใช้ในสูตร</th>
+                                <th class="p-3 bg-orange-50/50 text-center" style="width: 12%;">ปริมาณใช้จริง</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredient_tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- JS will inject the 15 pre-defined ingredient rows here on load -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-rose-50/70 font-bold border-t-2 border-slate-200">
+                                <td colspan="6" class="p-4 text-right text-slate-700">💰 รวมต้นทุนเฉพาะวัตถุดิบอาหารรอบผลิตนี้:</td>
+                                <td id="grand_total_cell" class="p-4 text-right text-red-600 text-base font-extrabold bg-rose-100/50">0.00</td>
+                                <td class="p-4 text-center text-slate-500">บาท</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
-            <button class="btn-secondary" onclick="calcBySupply()">ปรับสเกลสูตรและราคารอบผลิต</button>
-            <div id="res_supply" class="result-box res-supply"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- SECTION 2: PACKAGING & LABEL -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                            <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                                <i class="fa-solid fa-box-open"></i>
+                            </span>
+                            2. ต้นทุนบรรจุภัณฑ์และฉลากแบรนด์
+                        </h2>
+                        
+                        <div class="space-y-4">
+                            <!-- Packaging Box -->
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <div class="text-sm font-semibold text-slate-700 mb-2 flex justify-between">
+                                    <span>ถุง/ซอง/ถ้วย บรรจุภัณฑ์</span>
+                                    <span id="pkg_unit_cost_lbl" class="text-blue-600 text-xs font-normal">0.00 บาท/ชิ้น</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[11px] text-slate-500 block mb-1">จำนวนที่ซื้อ (ถุง)</label>
+                                        <input type="number" id="pkg_buy_qty" value="85" oninput="calculateLiveCosts()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] text-slate-500 block mb-1">ราคารวมซอง (บาท)</label>
+                                        <input type="number" id="pkg_buy_price" value="130" oninput="calculateLiveCosts()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Label Sticker Box -->
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <div class="text-sm font-semibold text-slate-700 mb-2 flex justify-between">
+                                    <span>สติกเกอร์ฉลากแบรนด์สินค้า</span>
+                                    <span id="lbl_unit_cost_lbl" class="text-blue-600 text-xs font-normal">0.00 บาท/ชิ้น</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[11px] text-slate-500 block mb-1">จำนวนที่ซื้อ (ดวง)</label>
+                                        <input type="number" id="lbl_buy_qty" value="85" oninput="calculateLiveCosts()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="text-[11px] text-slate-500 block mb-1">ราคารวมดวง (บาท)</label>
+                                        <input type="number" id="lbl_buy_price" value="130" oninput="calculateLiveCosts()" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: LABOR COST -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                            <span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </span>
+                            3. ต้นทุนค่าแรงพนักงานผลิตสินค้า
+                        </h2>
+
+                        <div class="space-y-3.5">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 block mb-1">ชั่วโมงทำงานต่อวัน (ชม.)</label>
+                                    <input type="number" id="labor_hours" value="5" oninput="calculateLiveCosts()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 block mb-1">ค่าแรงขั้นต่ำต่อวัน (บาท)</label>
+                                    <input type="number" id="labor_daily_rate" value="325" oninput="calculateLiveCosts()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center text-xs">
+                                <span class="text-slate-500">ถอดค่าแรงต่อนาที:</span>
+                                <span id="labor_per_minute" class="font-bold text-slate-800 text-sm">0.00 บาท/นาที</span>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 flex justify-between mb-1">
+                                    <span>เวลาที่ใช้ผลิตเฉลี่ยต่อถุง (นาที)</span>
+                                    <span id="labor_time_lbl" class="text-orange-600 font-bold">12.00 นาที</span>
+                                </label>
+                                <input type="range" id="labor_time_per_bag" min="1" max="60" value="12" oninput="updateLaborTimeLabel(); calculateLiveCosts();" class="w-full accent-orange-500 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 flex justify-between items-center text-xs">
+                                <span class="font-semibold text-orange-800">ค่าแรงรวมต่อถุงจริง:</span>
+                                <span id="labor_cost_per_bag_val" class="font-extrabold text-orange-700 text-sm">0.00 บาท</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <div class="card">
-            <h2>🎯 2. คำนวณปรับขนาดสูตรจาก "เป้าหมายจำนวนถุง"</h2>
-            <div class="input-group">
-                <label>จำนวนถุงบรรจุสำเร็จที่ต้องการสั่งผลิตในรอบนี้ (ถุง)</label>
-                <input type="number" id="need_bags" value="100" placeholder="ตัวอย่าง: 250">
+        <!-- Right Side: Live Dashboard & Scale Scaler Tools (Takes 1 Column) -->
+        <div class="space-y-6">
+            
+            <!-- CORE LIVE DASHBOARD -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-16 -top-16 opacity-5 text-[150px] pointer-events-none">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+                <h2 class="text-base font-bold text-slate-200 border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
+                    <span class="p-1.5 bg-slate-800 text-amber-400 rounded-lg">
+                        <i class="fa-solid fa-calculator"></i>
+                    </span>
+                    สรุปผลวิเคราะห์ต้นทุนรวมเรียลไทม์
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Standard Formula Base -->
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>ฐานสูตรผลิตเริ่มต้นปัจจุบัน:</span>
+                        <span class="font-bold text-slate-200 bg-slate-800 px-2 py-0.5 rounded">100 ถุง</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <!-- Sub Cost Items -->
+                        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 text-center">
+                            <span class="text-[10px] text-slate-400 block mb-0.5">วัตถุดิบหลัก/ถุง</span>
+                            <span id="dash_mat_cost" class="text-sm font-bold text-amber-400">0.00 บาท</span>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 text-center">
+                            <span class="text-[10px] text-slate-400 block mb-0.5">บรรจุภัณฑ์+ฉลาก/ถุง</span>
+                            <span id="dash_pkg_cost" class="text-sm font-bold text-amber-400">0.00 บาท</span>
+                        </div>
+                    </div>
+
+                    <!-- Direct Cost Before Overhead -->
+                    <div class="flex justify-between items-center text-xs text-slate-300 bg-slate-800/20 px-3 py-2 rounded-lg border border-slate-700/30">
+                        <span>รวมต้นทุนวัสดุต้นน้ำต่อถุง:</span>
+                        <span id="dash_direct_cost" class="font-bold text-slate-100">0.00 บาท</span>
+                    </div>
+
+                    <!-- Overhead Cost Box -->
+                    <div class="bg-amber-950/40 p-3.5 rounded-xl border border-amber-500/30">
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span class="font-bold text-amber-200 flex items-center gap-1">
+                                <i class="fa-solid fa-bolt text-amber-400"></i> ค่าโสหุ้ยแฝงการผลิต
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <input type="number" id="overhead_pct" value="20" oninput="calculateLiveCosts()" class="w-12 text-center py-0.5 bg-slate-800 border border-slate-600 rounded text-xs text-amber-300 font-bold focus:outline-none">
+                                <span class="text-amber-200 font-bold">%</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>(คิดจากค่าเฉลี่ยข้างต้น):</span>
+                            <span id="dash_overhead_cost" class="font-extrabold text-amber-400">0.00 บาท/ถุง</span>
+                        </div>
+                    </div>
+
+                    <!-- Labor Cost Summary -->
+                    <div class="flex justify-between items-center text-xs text-slate-300 bg-slate-800/20 px-3 py-2 rounded-lg border border-slate-700/30">
+                        <span>ต้นทุนค่าแรงผลิตต่อถุง:</span>
+                        <span id="dash_labor_cost" class="font-bold text-slate-100">0.00 บาท</span>
+                    </div>
+
+                    <!-- Final Cost Summary per Bag -->
+                    <div class="bg-gradient-to-r from-orange-600 to-red-600 p-4 rounded-xl border border-orange-400/30 text-center mt-2 shadow-inner">
+                        <span class="text-xs uppercase tracking-wider text-orange-100 block mb-0.5 font-semibold">ต้นทุนรวมสุทธิเฉลี่ยต่อถุง</span>
+                        <span id="dash_grand_total_bag" class="text-3xl font-extrabold text-white">0.00</span>
+                        <span class="text-sm text-orange-200 block mt-0.5 font-medium">(รวมวัตถุดิบ + ค่าแรง + ซอง + สติกเกอร์ + โสหุ้ย)</span>
+                    </div>
+                </div>
             </div>
-            <button class="btn-primary" onclick="calcByDemand()">ปรับสเกลสูตรและราคารอบผลิต</button>
-            <div id="res_demand" class="result-box res-demand"></div>
+
+            <!-- SCALE OPTIMIZER TOOLS -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-6">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3 flex items-center gap-2">
+                        <span class="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                            <i class="fa-solid fa-arrows-left-right-to-line"></i>
+                        </span>
+                        4. ระบบปรับสเกลสูตรอัจฉริยะสองทิศทาง
+                    </h2>
+                    <p class="text-xs text-slate-500">คำนวณปรับสัดส่วนปริมาณวัตถุดิบและราคาสำหรับแผนผลิตจริงได้อย่างแม่นยำ</p>
+                </div>
+
+                <!-- SUB-TOOL 1: SCALE BY SUPPLY -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3.5">
+                    <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                        <i class="fa-solid fa-weight-hanging text-amber-500"></i> ปรับสูตรตาม "ปริมาณที่มี"
+                    </h3>
+                    <div>
+                        <label class="text-[11px] text-slate-500 block mb-1">ปริมาณวัตถุดิบหลักข้อแรกที่ระบุฝั่งใช้จริง</label>
+                        <div class="relative">
+                            <input type="number" id="have_main_mat" placeholder="ตัวอย่างมีมันหมู: 40" step="0.01" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition pr-12">
+                            <span id="main_mat_unit_lbl" class="absolute right-3 top-2.5 text-xs text-slate-400 font-semibold">กิโล</span>
+                        </div>
+                    </div>
+                    <button onclick="calcBySupply()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-calculator"></i> ปรับสเกลตามข้อจำกัดของวัตถุดิบ
+                    </button>
+                    <div id="res_supply" class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-emerald-800 space-y-1 hidden"></div>
+                </div>
+
+                <!-- SUB-TOOL 2: SCALE BY DEMAND -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3.5">
+                    <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
+                        <i class="fa-solid fa-cart-shopping text-blue-500"></i> ปรับสูตรตาม "เป้าหมายจำนวนถุง"
+                    </h3>
+                    <div>
+                        <label class="text-[11px] text-slate-500 block mb-1">จำนวนถุงสำเร็จรูปที่ต้องการผลิตจริงรอบนี้ (ถุง)</label>
+                        <input type="number" id="need_bags" value="100" placeholder="ตัวอย่างเป้าหมาย: 250" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                    <button onclick="calcByDemand()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-cart-flatbed-suitcases"></i> ปรับสเกลและสร้างรายการใบจัดซื้อ
+                    </button>
+                    <div id="res_demand" class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-800 space-y-1 hidden"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- CUSTOM CONFIRM MODAL (REPLACING THE BROWSER confirm()) -->
+<div id="custom_confirm_modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center gap-3 text-amber-600 mb-3">
+            <span class="p-2.5 bg-amber-50 rounded-xl text-xl">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </span>
+            <h3 class="text-lg font-bold text-slate-900" id="confirm_modal_title">ยืนยันการทำรายการ</h3>
+        </div>
+        <p class="text-sm text-slate-600 mb-6" id="confirm_modal_desc">คุณต้องการทำรายการลบนี้ใช่หรือไม่?</p>
+        <div class="flex justify-end gap-3">
+            <button onclick="closeConfirmModal(false)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">ยกเลิก</button>
+            <button onclick="closeConfirmModal(true)" id="confirm_modal_btn" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">ลบรายการ</button>
         </div>
     </div>
 </div>
 
+<!-- CUSTOM TOAST NOTIFICATION CONTAINER -->
+<div id="toast_container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
 <script>
+    // Pre-defined ingredients as dropdown lists (15 standard items specified)
+    const PRE_INGREDIENTS = [
+        "มันหมูติดหนัง",
+        "หัวหอมแดงไทย",
+        "กระเทียม",
+        "โหระพา",
+        "เกลือ",
+        "น้ำตาลทรายขาว",
+        "อายิโน๊ะโมโต๊ะ",
+        "พริกแห้งจินดา",
+        "ใบมะกรูด",
+        "ข่า",
+        "ผงปาปริก้า",
+        "ผงต้มยำ",
+        "ผงวิงแซ่บ",
+        "ผงBBQ",
+        "ผงลาบ"
+    ];
+
+    // Perfect Match Default Values to render the exactly 43.89 THB target state from user specs
+    const INITIAL_FORMULA = [
+        { name: "มันหมูติดหนัง", buyQty: 20, buyPrice: 1400, unit: "กิโลกรัม", useQty: 20 },
+        { name: "หัวหอมแดงไทย", buyQty: 2, buyPrice: 190, unit: "กิโลกรัม", useQty: 2 },
+        { name: "กระเทียม", buyQty: 2, buyPrice: 150, unit: "กิโลกรัม", useQty: 2 },
+        { name: "พริกแห้งจินดา", buyQty: 0.5, buyPrice: 62.50, unit: "กิโลกรัม", useQty: 0.5 },
+        { name: "ผงปาปริก้า", buyQty: 1, buyPrice: 85, unit: "กรัม", useQty: 40 },
+        { name: "โหระพา", buyQty: 1, buyPrice: 50, unit: "กรัม", useQty: 0 },
+        { name: "เกลือ", buyQty: 1, buyPrice: 15, unit: "กรัม", useQty: 0 },
+        { name: "น้ำตาลทรายขาว", buyQty: 1, buyPrice: 25, unit: "กรัม", useQty: 0 },
+        { name: "อายิโน๊ะโมโต๊ะ", buyQty: 1, buyPrice: 60, unit: "กรัม", useQty: 0 },
+        { name: "ใบมะกรูด", buyQty: 0.2, buyPrice: 20, unit: "กรัม", useQty: 0 },
+        { name: "ข่า", buyQty: 0.5, buyPrice: 35, unit: "กรัม", useQty: 0 },
+        { name: "ผงต้มยำ", buyQty: 1, buyPrice: 120, unit: "กรัม", useQty: 0 },
+        { name: "ผงวิงแซ่บ", buyQty: 1, buyPrice: 130, unit: "กรัม", useQty: 0 },
+        { name: "ผงBBQ", buyQty: 1, buyPrice: 110, unit: "กรัม", useQty: 0 },
+        { name: "ผงลาบ", buyQty: 1, buyPrice: 115, unit: "กรัม", useQty: 0 }
+    ];
+
+    let confirmCallback = null;
+
     window.onload = function() {
+        renderFullIngredientsTable();
         calculateLiveCosts();
+        updateLaborTimeLabel();
     };
 
+    // Displays the standard 15 items in table upon system initialization
+    function renderFullIngredientsTable() {
+        const tbody = document.getElementById('ingredient_tbody');
+        tbody.innerHTML = '';
+        
+        INITIAL_FORMULA.forEach(item => {
+            const tr = createRowHTML(item);
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Helper to generate a table row
+    function createRowHTML(itemData = {}) {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/50 transition";
+        
+        const selectedName = itemData.name || "มันหมูติดหนัง";
+        const buyQty = itemData.buyQty !== undefined ? itemData.buyQty : 1;
+        const buyPrice = itemData.buyPrice !== undefined ? itemData.buyPrice : 0;
+        const unit = itemData.unit || "กิโลกรัม";
+        const useQty = itemData.useQty !== undefined ? itemData.useQty : 0;
+
+        // Populate standard options
+        let optionsHTML = '';
+        PRE_INGREDIENTS.forEach(ing => {
+            const isSelected = (ing === selectedName) ? 'selected' : '';
+            optionsHTML += `<option value="${ing}" ${isSelected}>${ing}</option>`;
+        });
+        
+        // Add "Others..."
+        const isOthersSelected = (!PRE_INGREDIENTS.includes(selectedName) && selectedName !== "") ? 'selected' : '';
+        optionsHTML += `<option value="อื่นๆ" ${isOthersSelected}>อื่นๆ (ระบุเอง...)</option>`;
+
+        tr.innerHTML = `
+            <td class="p-3">
+                <div class="space-y-1.5">
+                    <select class="ing-name-select w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500" onchange="toggleCustomInput(this); calculateLiveCosts();">
+                        ${optionsHTML}
+                    </select>
+                    <input type="text" class="ing-name-custom w-full p-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 ${isOthersSelected ? '' : 'hidden'}" placeholder="ชื่อวัตถุดิบอื่น ๆ" value="${selectedName}">
+                </div>
+            </td>
+            <td class="p-3">
+                <input type="number" class="ing-buy-qty text-center w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500" value="${buyQty}" oninput="calculateLiveCosts()" step="any">
+            </td>
+            <td class="p-3">
+                <input type="number" class="ing-buy-price text-right w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500" value="${buyPrice}" oninput="calculateLiveCosts()" step="any">
+            </td>
+            <td class="p-3">
+                <input type="text" class="ing-unit-cost text-right w-full p-2 bg-slate-100 text-slate-500 border border-slate-100 rounded-lg text-xs font-bold" value="0.00" readonly>
+            </td>
+            <td class="p-3">
+                <select class="ing-unit w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500" onchange="calculateLiveCosts()">
+                    <option value="กิโลกรัม" ${unit === "กิโลกรัม" ? "selected" : ""}>กิโลกรัม (kg)</option>
+                    <option value="กรัม" ${unit === "กรัม" ? "selected" : ""}>กรัม (g)</option>
+                </select>
+            </td>
+            <td class="p-3">
+                <input type="number" class="ing-use-qty text-center w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500" value="${useQty}" oninput="calculateLiveCosts()" step="any">
+            </td>
+            <td class="item-total-cost text-right p-4 font-bold text-slate-800 text-xs bg-slate-50/30">
+                0.00
+            </td>
+            <td class="p-3 text-center">
+                <button onclick="deleteRow(this)" class="p-2 text-slate-400 hover:text-red-600 transition duration-150">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        return tr;
+    }
+
+    // Dynamic recalculation of the entire system
     function calculateLiveCosts() {
         const rows = document.querySelectorAll('#ingredient_tbody tr');
-        let grandTotal = 0;
+        let grandTotalMatCost = 0;
 
+        // 1. Calculate and sync standard ingredients costs
         rows.forEach(row => {
-            const buyQty = parseFloat(row.querySelector('.ing-buy-qty').value) || 1;
+            const nameSelect = row.querySelector('.ing-name-select');
+            const customInput = row.querySelector('.ing-name-custom');
+            const name = nameSelect.value === 'อื่นๆ' ? customInput.value : nameSelect.value;
+            
+            const buyQty = parseFloat(row.querySelector('.ing-buy-qty').value) || 0;
             const buyPrice = parseFloat(row.querySelector('.ing-buy-price').value) || 0;
             const unitType = row.querySelector('.ing-unit').value;
             const useQty = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
 
-            const pricePerKg = buyPrice / buyQty;
+            let pricePerKg = 0;
+            if (buyQty > 0) {
+                pricePerKg = buyPrice / buyQty;
+            }
             row.querySelector('.ing-unit-cost').value = pricePerKg.toFixed(2);
 
             let itemCost = 0;
@@ -233,55 +501,148 @@
                 itemCost = (pricePerKg / 1000) * useQty;
             }
 
-            grandTotal += itemCost;
+            grandTotalMatCost += itemCost;
             row.querySelector('.item-total-cost').innerText = itemCost.toFixed(2);
         });
 
-        document.getElementById('grand_total_cell').innerText = grandTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        return grandTotal;
+        // Update ingredient total
+        document.getElementById('grand_total_cell').innerText = grandTotalMatCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        // 2. Packaging and sticker cost calculation
+        const pkgBuyQty = parseFloat(document.getElementById('pkg_buy_qty').value) || 0;
+        const pkgBuyPrice = parseFloat(document.getElementById('pkg_buy_price').value) || 0;
+        const pkgUnitCost = pkgBuyQty > 0 ? (pkgBuyPrice / pkgBuyQty) : 0;
+        document.getElementById('pkg_unit_cost_lbl').innerText = pkgUnitCost.toFixed(2) + " บาท/ชิ้น";
+
+        const lblBuyQty = parseFloat(document.getElementById('lbl_buy_qty').value) || 0;
+        const lblBuyPrice = parseFloat(document.getElementById('lbl_buy_price').value) || 0;
+        const lblUnitCost = lblBuyQty > 0 ? (lblBuyPrice / lblBuyQty) : 0;
+        document.getElementById('lbl_unit_cost_lbl').innerText = lblUnitCost.toFixed(2) + " บาท/ชิ้น";
+
+        // Total packaging cost per bag
+        const packagingCostPerBag = pkgUnitCost + lblUnitCost;
+
+        // 3. Labor Cost calculation
+        const laborHours = parseFloat(document.getElementById('labor_hours').value) || 0;
+        const dailyRate = parseFloat(document.getElementById('labor_daily_rate').value) || 0;
+        const workingMinutes = laborHours * 60;
+        const ratePerMinute = workingMinutes > 0 ? (dailyRate / workingMinutes) : 0;
+        
+        document.getElementById('labor_per_minute').innerText = ratePerMinute.toFixed(4) + " บาท/นาที";
+
+        const timePerBag = parseFloat(document.getElementById('labor_time_per_bag').value) || 0;
+        const laborCostPerBag = ratePerMinute * timePerBag;
+        
+        document.getElementById('labor_cost_per_bag_val').innerText = laborCostPerBag.toFixed(2) + " บาท";
+
+        // 4. Overhead calculation (default 20%)
+        const overheadPct = parseFloat(document.getElementById('overhead_pct').value) || 0;
+        
+        // Cost per bag (from ingredients, based on the reference baseline of 100 bags)
+        const matCostPerBag = grandTotalMatCost / 100;
+        const directCostPerBag = matCostPerBag + packagingCostPerBag;
+        const overheadCostPerBag = directCostPerBag * (overheadPct / 100);
+
+        // Final Aggregate sum per bag
+        const grandTotalCostPerBag = directCostPerBag + overheadCostPerBag + laborCostPerBag;
+
+        // 5. Render to Dashboard
+        document.getElementById('dash_mat_cost').innerText = matCostPerBag.toFixed(2) + " บาท";
+        document.getElementById('dash_pkg_cost').innerText = packagingCostPerBag.toFixed(2) + " บาท";
+        document.getElementById('dash_direct_cost').innerText = directCostPerBag.toFixed(2) + " บาท";
+        document.getElementById('dash_overhead_cost').innerText = overheadCostPerBag.toFixed(2) + " บาท/ถุง";
+        document.getElementById('dash_labor_cost').innerText = laborCostPerBag.toFixed(2) + " บาท";
+        document.getElementById('dash_grand_total_bag').innerText = grandTotalCostPerBag.toFixed(2);
+
+        // Dynamic update first row unit to align unit text in scaler tools
+        updateMainMatUnitLabel();
+
+        return {
+            grandTotalMatCost,
+            matCostPerBag,
+            packagingCostPerBag,
+            overheadCostPerBag,
+            laborCostPerBag,
+            grandTotalCostPerBag
+        };
+    }
+
+    // Helper to sync sliding values with display
+    function updateLaborTimeLabel() {
+        const val = parseFloat(document.getElementById('labor_time_per_bag').value);
+        document.getElementById('labor_time_lbl').innerText = val.toFixed(2) + " นาที";
+    }
+
+    // Dynamic sync of scaling tool units with selected standard unit
+    function updateMainMatUnitLabel() {
+        const rows = document.querySelectorAll('#ingredient_tbody tr');
+        if (rows.length > 0) {
+            const unit = rows[0].querySelector('.ing-unit').value;
+            document.getElementById('main_mat_unit_lbl').innerText = unit === "กรัม" ? "กรัม" : "กิโล";
+        }
+    }
+
+    function toggleCustomInput(selectElement) {
+        const customInput = selectElement.nextElementSibling;
+        if (selectElement.value === 'อื่นๆ') {
+            customInput.classList.remove('hidden');
+        } else {
+            customInput.classList.add('hidden');
+            customInput.value = selectElement.value;
+        }
     }
 
     function addRow() {
         const tbody = document.getElementById('ingredient_tbody');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><input type="text" class="ing-name" placeholder="ชื่อวัตถุดิบ"></td>
-            <td><input type="number" class="ing-buy-qty" value="1" oninput="calculateLiveCosts()"></td>
-            <td><input type="number" class="ing-buy-price" value="0" oninput="calculateLiveCosts()"></td>
-            <td><input type="text" class="ing-unit-cost readonly-input" value="0.00" readonly></td>
-            <td>
-                <select class="ing-unit" onchange="calculateLiveCosts()">
-                    <option value="กิโลกรัม" selected>กิโลกรัม (kg)</option>
-                    <option value="กรัม">กรัม (g)</option>
-                </select>
-            </td>
-            <td><input type="number" class="ing-use-qty" value="0" oninput="calculateLiveCosts()" step="0.01"></td>
-            <td class="item-total-cost cost-cell">0.00</td>
-            <td><button onclick="deleteRow(this)" style="background:#ef4444; color:white; padding:4px 8px; border:none; border-radius:4px; cursor:pointer;">❌</button></td>
-        `;
+        const defaultItem = { name: "อื่นๆ", buyQty: 1, buyPrice: 0, unit: "กิโลกรัม", useQty: 0 };
+        const tr = createRowHTML(defaultItem);
         tbody.appendChild(tr);
         calculateLiveCosts();
+        showToast("เพิ่มวัตถุดิบรายการใหม่เรียบร้อยแล้ว", "success");
     }
 
-    function deleteRow(btn) {
-        if(confirm('ต้องการลบวัตถุดิบรายการนี้ออกจากสูตรใช่หรือไม่?')) {
-            btn.parentElement.parentElement.remove();
+    function deleteRow(buttonElement) {
+        const row = buttonElement.closest('tr');
+        const nameSelect = row.querySelector('.ing-name-select');
+        const customInput = row.querySelector('.ing-name-custom');
+        const name = nameSelect.value === 'อื่นๆ' ? customInput.value || 'วัตถุดิบไม่ระบุชื่อ' : nameSelect.value;
+
+        showConfirmModal(`ลบวัตถุดิบออกจากสูตร`, `คุณแน่ใจหรือไม่ว่าต้องการลบ "<b>${name}</b>" ออกจากการคำนวณในรอบนี้?`, function() {
+            row.remove();
             calculateLiveCosts();
-        }
+            showToast(`ลบ "${name}" ออกเรียบร้อยแล้ว`, "info");
+        });
     }
 
+    // 1. Scale from Ingredient limits (By Supply)
     function calcBySupply() {
         const haveMat = parseFloat(document.getElementById('have_main_mat').value);
         const rows = document.querySelectorAll('#ingredient_tbody tr');
         
-        if (rows.length === 0) { alert('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 รายการ'); return; }
-        if (isNaN(haveMat) || haveMat <= 0) { alert('กรุณาระบุปริมาณวัตถุดิบที่มีให้ถูกต้อง'); return; }
+        if (rows.length === 0) {
+            showToast('กรุณาเพิ่มวัตถุดิบในสูตรอย่างน้อย 1 รายการ', 'error');
+            return;
+        }
+        if (isNaN(haveMat) || haveMat <= 0) {
+            showToast('กรุณาระบุปริมาณวัตถุดิบที่มีฝั่งใช้ผลิตให้ถูกต้อง', 'warning');
+            return;
+        }
 
-        const baseUseQty = parseFloat(rows[0].querySelector('.ing-use-qty').value) || 1;
+        const nameSelect = rows[0].querySelector('.ing-name-select');
+        const customInput = rows[0].querySelector('.ing-name-custom');
+        const mainName = nameSelect.value === 'อื่นๆ' ? customInput.value || 'วัตถุดิบหลัก' : nameSelect.value;
+
+        const baseUseQty = parseFloat(rows[0].querySelector('.ing-use-qty').value) || 0;
+        if (baseUseQty <= 0) {
+            showToast(`ปริมาณใช้จริงในสูตรเริ่มต้นของ "${mainName}" ต้องมากกว่า 0 เพื่อคำนวณอัตราส่วนสเกล`, 'error');
+            return;
+        }
+
         const factor = haveMat / baseUseQty;
 
+        // Apply scale factors to all other rows
         rows.forEach((row, index) => {
-            if(index === 0) {
+            if (index === 0) {
                 row.querySelector('.ing-use-qty').value = haveMat;
             } else {
                 const currentVal = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
@@ -289,64 +650,169 @@
             }
         });
 
-        const finalGrandCost = calculateLiveCosts();
+        // Recalculate financial state
+        const calculated = calculateLiveCosts();
         const estimatedBags = Math.floor(100 * factor);
 
         const resDiv = document.getElementById('res_supply');
-        resDiv.style.display = 'block';
+        resDiv.classList.remove('hidden');
         resDiv.innerHTML = `
-            <strong>💡 ปรับสเกลสูตรสำเร็จ (ตามวัตถุดิบหลัก):</strong><br>
-            • จะได้น้ำพริกบรรจุถุงประมาณ: <span class="highlight" style="font-size:1.3em;">${estimatedBags.toLocaleString()}</span> ถุง<br>
-            • ต้นทุนรวมวัตถุดิบรอบผลิตใหม่นี้: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท
+            <div class="font-bold text-emerald-950 flex items-center gap-1 mb-1 text-sm">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i> ปรับสเกลตามวัตถุดิบ "${mainName}" สำเร็จ!
+            </div>
+            • ขยายสัดส่วนการผลิตจากตัวแปรตัวคูณ: <span class="font-bold">${factor.toFixed(4)} เท่า</span><br>
+            • ได้น้ำพริกสำเร็จรูปขวด/ถุงปริมาณ: <span class="text-emerald-700 font-extrabold text-sm">${estimatedBags.toLocaleString()} ถุง</span><br>
+            • ต้นทุนรวมวัตถุดิบรอบผลิตขยาย: <span class="font-bold text-slate-900">${calculated.grandTotalMatCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</span><br>
+            • ต้นทุนเฉลี่ยผลิตรวมต่อชิ้นรอบผลิตใหม่นี้: <span class="text-orange-600 font-extrabold">${calculated.grandTotalCostPerBag.toFixed(2)} บาท/ถุง</span>
         `;
+        showToast("ปรับสเกลสูตรจากข้อจำกัดวัตถุดิบเรียบร้อยแล้ว", "success");
     }
 
-    /* * ปรับฟังก์ชันการคำนวณตามเป้าหมายถุง (calcByDemand) 
-     * ให้วนลูปดึงข้อมูลวัตถุดิบทุกตัวที่อัปเดตสเกลแล้วมาสรุปเป็น Shopping List
-     */
+    // 2. Scale from Product demand bag (By Demand)
     function calcByDemand() {
         const needBags = parseFloat(document.getElementById('need_bags').value);
         const rows = document.querySelectorAll('#ingredient_tbody tr');
 
-        if (isNaN(needBags) || needBags <= 0) { alert('กรุณาระบุจำนวนถุงเป้าหมายให้ถูกต้อง'); return; }
-        if (rows.length === 0) { alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ'); return; }
+        if (isNaN(needBags) || needBags <= 0) {
+            showToast('กรุณาระบุเป้าหมายจำนวนถุงจัดส่งเพื่อคำนวณขยายให้ถูกต้อง', 'warning');
+            return;
+        }
+        if (rows.length === 0) {
+            showToast('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการเพื่อคำนวณ', 'error');
+            return;
+        }
 
         const factor = needBags / 100;
 
-        // สตาร์ทตัวแปรสะสมข้อความสรุปวัตถุดิบ
-        let summaryListHTML = `<div class="shopping-list"><strong>🛒 สรุปรายการวัตถุดิบที่ต้องใช้สำหรับผลิต ${needBags} ถุง:</strong><ul>`;
+        let summaryListHTML = `
+            <div class="mt-2.5 pt-2 border-t border-blue-200/50">
+                <div class="font-bold text-blue-950 mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-cart-shopping"></i> ใบแจ้งจัดซื้อวัตถุดิบสำหรับผลิต ${needBags} ถุง:
+                </div>
+                <ul class="space-y-1 pl-4 list-disc text-blue-900 text-[11px]">
+        `;
 
         rows.forEach(row => {
-            // ดึงชื่อวัตถุดิบ ปริมาณฐาน และหน่วยนับปัจจุบันในแถว
-            const name = row.querySelector('.ing-name').value || 'วัตถุดิบไม่มีชื่อ';
+            const nameSelect = row.querySelector('.ing-name-select');
+            const customInput = row.querySelector('.ing-name-custom');
+            const name = nameSelect.value === 'อื่นๆ' ? customInput.value || 'วัตถุดิบไม่มีชื่อ' : nameSelect.value;
+            
             const currentUse = parseFloat(row.querySelector('.ing-use-qty').value) || 0;
             const unit = row.querySelector('.ing-unit').value;
 
-            // 1. คำนวณขยายสัดส่วนน้ำหนักลงไปในตารางให้ User เห็นค่า
+            // Apply calculated factor
             const newUseQty = currentUse * factor;
             row.querySelector('.ing-use-qty').value = newUseQty.toFixed(2);
 
-            // 2. บันทึกเพิ่มรายการสรุปลงข้อความ
-            summaryListHTML += `<li><b>${name}:</b>ใช้จำนวน <span style="color:#d35400; font-weight:bold;">${newUseQty.toFixed(2)}</span> ${unit}</li>`;
+            if (newUseQty > 0) {
+                summaryListHTML += `<li><b>${name}:</b> ใช้จำนวน <span class="text-orange-600 font-bold">${newUseQty.toFixed(2)}</span> ${unit}</li>`;
+            }
         });
 
         summaryListHTML += `</ul></div>`;
 
-        // รันสูตร Re-Calculate บัญชีการเงินรวม
-        const finalGrandCost = calculateLiveCosts();
-        const costPerBag = finalGrandCost / needBags;
+        // Recalculate state
+        const calculated = calculateLiveCosts();
 
         const resDiv = document.getElementById('res_demand');
-        resDiv.style.display = 'block';
+        resDiv.classList.remove('hidden');
         resDiv.innerHTML = `
-            <strong>🎯 ปรับสเกลยอดการใช้งานเรียบร้อย:</strong><br>
-            • ยอดผลิตเป้าหมาย: <b>${needBags}</b> ถุง<br>
-            • ต้นทุนรวมเฉพาะวัตถุดิบทั้งสิ้น: <span class="highlight">${finalGrandCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> บาท<br>
-            • เฉลี่ยต้นทุนเฉพาะวัตถุดิบต่อหน่วย: <span class="highlight">${costPerBag.toFixed(2)}</span> บาท/ถุง
+            <div class="font-bold text-blue-950 flex items-center gap-1 mb-1 text-sm">
+                <i class="fa-solid fa-circle-check text-blue-600"></i> ปรับสเกลกำลังสั่งผลิตสำเร็จ!
+            </div>
+            • ยอดผลิตเป้าหมายจริง: <span class="font-bold">${needBags} ถุง</span> (ขยายสัดส่วน ${factor.toFixed(2)} เท่า)<br>
+            • รวมมูลค่าเฉพาะส่วนวัตถุดิบรอบใหม่: <span class="font-bold text-slate-900">${calculated.grandTotalMatCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</span><br>
+            • สรุปสเปกต้นทุนรวมเบ็ดเสร็จเฉลี่ย: <span class="text-orange-600 font-extrabold text-sm">${calculated.grandTotalCostPerBag.toFixed(2)} บาท/ถุง</span>
             ${summaryListHTML}
         `;
+        showToast("ปรับสเกลเป้าหมายการผลิตและสร้างใบสั่งจัดซื้อเรียบร้อยแล้ว", "success");
+    }
+
+    // Clear numbers functionality (Keeping standard template list intact, but resetting numbers to zero)
+    function clearInputs() {
+        // Reset table variables
+        const rows = document.querySelectorAll('#ingredient_tbody tr');
+        rows.forEach(row => {
+            row.querySelector('.ing-buy-qty').value = 0;
+            row.querySelector('.ing-buy-price').value = 0;
+            row.querySelector('.ing-use-qty').value = 0;
+        });
+
+        // Reset Packaging
+        document.getElementById('pkg_buy_qty').value = 0;
+        document.getElementById('pkg_buy_price').value = 0;
+        document.getElementById('lbl_buy_qty').value = 0;
+        document.getElementById('lbl_buy_price').value = 0;
+
+        // Clear display scaling boxes
+        document.getElementById('res_supply').classList.add('hidden');
+        document.getElementById('res_demand').classList.add('hidden');
+        document.getElementById('have_main_mat').value = '';
+
+        calculateLiveCosts();
+        showToast("🧹 ล้างค่าตัวเลขและปริมาณเรียบร้อยแล้ว", "info");
+    }
+
+    function openClearConfirmModal() {
+        showConfirmModal(
+            "🧹 ล้างตัวเลขการคำนวณทั้งหมด", 
+            "คุณต้องการล้างตัวเลขปริมาณการจัดซื้อ ราคา และสัดส่วนการตักใช้ทั้งหมดของสูตรนี้ให้เป็น 0 หรือไม่? (รายการวัตถุดิบและแถวจะยังคงอยู่ครบเหมือนเดิม)", 
+            function() {
+                clearInputs();
+            }
+        );
+    }
+
+    // Custom non-blocking Alert modal system to secure standard experience
+    function showConfirmModal(title, text, confirmFn) {
+        document.getElementById('confirm_modal_title').innerText = title;
+        document.getElementById('confirm_modal_desc').innerHTML = text;
+        document.getElementById('custom_confirm_modal').classList.remove('hidden');
+        confirmCallback = confirmFn;
+    }
+
+    function closeConfirmModal(isConfirmed) {
+        document.getElementById('custom_confirm_modal').classList.add('hidden');
+        if (isConfirmed && confirmCallback) {
+            confirmCallback();
+        }
+        confirmCallback = null;
+    }
+
+    // Elegant Toast notifications replacing intrusive alert() popups
+    function showToast(message, type = "info") {
+        const container = document.getElementById('toast_container');
+        const toast = document.createElement('div');
         
-        document.getElementById('need_bags').value = 100;
+        let bgColor = "bg-slate-800";
+        let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+        
+        if (type === "success") {
+            bgColor = "bg-emerald-900";
+            icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+        } else if (type === "error") {
+            bgColor = "bg-rose-950 border border-rose-800";
+            icon = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+        } else if (type === "warning") {
+            bgColor = "bg-amber-950 border border-amber-800";
+            icon = '<i class="fa-solid fa-circle-exclamation text-amber-400"></i>';
+        }
+        
+        toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold animate-in slide-in-from-bottom duration-300 min-w-[250px] border border-white/10`;
+        toast.innerHTML = `
+            ${icon}
+            <span class="flex-1">${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Autoremove
+        setTimeout(() => {
+            toast.classList.add('animate-out', 'fade-out', 'slide-out-to-bottom', 'duration-300');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
     }
 </script>
 
