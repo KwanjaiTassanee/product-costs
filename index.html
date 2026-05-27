@@ -262,7 +262,7 @@
                         <span class="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
                             <i class="fa-solid fa-arrows-left-right-to-line text-xs"></i>
                         </span>
-                        5. เครื่องมือปรับสเกลสูตรผลิต
+                        5. คำนวนสูตรผลิตสินค้า
                     </h2>
                     
                     <div class="space-y-3 text-xs">
@@ -273,7 +273,7 @@
                                 <span id="main_mat_unit_lbl" class="absolute right-2.5 top-1.5 text-[10px] text-slate-400 font-bold">กิโล</span>
                             </div>
                             <button onclick="calcBySupply()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-bold rounded-lg transition duration-150 shadow-sm">
-                                ปรับสเกลตามตัวแปรวัตถุดิบแถวแรก
+                                ปรับรายการวัตถุดิบ
                             </button>
                             <div id="res_supply" class="p-2 mt-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] text-emerald-900 space-y-0.5 hidden"></div>
                         </div>
@@ -282,7 +282,7 @@
                             <span class="text-[10px] font-bold text-slate-700 block mb-1 uppercase tracking-wider">🎯 2. ปรับตามเป้าหมายจำนวนถุง</span>
                             <input type="number" id="need_bags" value="100" placeholder="ตัวอย่างผลิต: 250" class="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold mb-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 transition">
                             <button onclick="calcByDemand()" class="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg transition duration-150 shadow-sm">
-                                ขยายสูตรผลิต & สร้างใบจัดซื้อ
+                                คำนวนรายการวัตถุดิบ
                             </button>
                             <div id="res_demand" class="p-2 mt-1.5 bg-blue-50 border border-blue-100 rounded-lg text-[10px] text-blue-900 space-y-0.5 max-h-[140px] overflow-y-auto custom-scrollbar hidden"></div>
                         </div>
@@ -601,7 +601,7 @@
         let summaryListHTML = `
             <div class="mt-1.5 pt-1.5 border-t border-blue-200/50">
                 <div class="font-bold text-blue-950 mb-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-cart-shopping"></i> ใบสั่งซื้อของสำหรับผลิต ${needBags} ถุง:
+                    <i class="fa-solid fa-cart-shopping"></i> รายการวัตถุดิบของสำหรับผลิต ${needBags} ถุง:
                 </div>
                 <ul class="space-y-0.5 pl-4 list-disc text-blue-900 text-[10px]">
         `;
@@ -630,14 +630,14 @@
         resDiv.classList.remove('hidden');
         resDiv.innerHTML = `
             <div class="font-bold text-blue-950 flex items-center gap-1 mb-0.5">
-                <i class="fa-solid fa-circle-check text-blue-600"></i> ปรับสเกลจำนวนถุงสำเร็จ!
+                <i class="fa-solid fa-circle-check text-blue-600"></i> ปรับจำนวนถุงสำเร็จ!
             </div>
             • ผลิตเป้าหมาย: <span class="font-bold">${needBags} ถุง</span> (ขยาย ${factor.toFixed(2)} เท่า)<br>
             • มูลค่ารวมวัตถุดิบอาหาร: <span class="font-bold text-slate-900">${calculated.grandTotalMatCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</span><br>
             • ต้นทุนรวมสุทธิเฉลี่ย: <span class="text-orange-600 font-extrabold">${calculated.grandTotalCostPerBag.toFixed(2)} บาท/ถุง</span>
             ${summaryListHTML}
         `;
-        showToast("ปรับสเกลเป้าหมายและสร้างใบจัดซื้อเรียบร้อยแล้ว", "success");
+        showToast("ปรับตามเป้าหมาย", "success");
     }
 
     function clearInputs() {
